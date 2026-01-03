@@ -25,23 +25,28 @@ const HeaderBanner = () => {
             </p>
           </div>
 
-          <Link
-            onClick={() => scrollTo(0, 0)}
-            to="#specialists"
+          <button
+            onClick={() =>
+              document.getElementById("specialists")?.scrollIntoView({
+                behavior: "smooth",
+              })
+            }
             className="w-fit inline-flex items-center gap-2 bg-white text-gray-700 px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-100 transform transition-transform duration-300 hover:translate-x-[10px]"
           >
             Book appointment
             <img src={assets.arrow_icon} alt="Arrow Icon" className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
 
         {/* Right */}
         <div className="flex-1 flex justify-center md:justify-end items-end">
-          <img
-            src={assets.header_img}
-            alt="Header Banner"
-            className="w-full max-w-md md:max-w-lg h-auto"
-          />
+          <Link to="/docters">
+            <img
+              src={assets.header_img}
+              alt="Header Banner"
+              className="w-full max-w-md md:max-w-lg h-auto cursor-pointer transform transition-transform duration-300 hover:-translate-y-2"
+            />
+          </Link>
         </div>
       </div>
     </div>

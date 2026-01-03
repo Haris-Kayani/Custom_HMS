@@ -6,7 +6,7 @@ export const SpecialistsMenu = () => {
   return (
     <div
       className="flex flex-col items-center gap-4 py-16 text-gray-800"
-      id="speciality"
+      id="specialists"
     >
       <div className="text-center">
         <h2 className="text-3xl font-medium text-slate-800">

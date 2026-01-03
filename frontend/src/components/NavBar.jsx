@@ -48,7 +48,7 @@ const NavBar = () => {
 
         <li>
           <NavLink
-            to="/docters"
+            to="/doctors"
             className="group flex flex-col items-center text-lg"
           >
             {({ isActive }) => (

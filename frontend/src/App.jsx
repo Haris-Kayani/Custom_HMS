@@ -7,8 +7,9 @@ import Login from "./pages/Login";
 import Docters from "./pages/Docters";
 import MyProfile from "./pages/MyProfile";
 import MyAppointments from "./pages/MyAppointments";
-import Appoinment from "./pages/Appointment";
+import { Appointment } from "./components/Appointment";
 import NavBar from "./components/NavBar";
+import { Footer } from "./components/Footer";
 
 const App = () => {
   return (
@@ -20,11 +21,13 @@ const App = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/docters" element={<Docters />} />
+        <Route path="/doctors" element={<Docters />} />
+        {/* <Route path="/doctors/:speciality" element={<Docters />} /> */}
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/my-appointments" element={<MyAppointments />} />
-        <Route path="/appointment/:docterID" element={<Appoinment />} />
+        <Route path="/appointment/:doctorID" element={<Appointment />} />
       </Routes>
+      <Footer/>
     </div>
   );
 };
