@@ -1,40 +1,242 @@
-import { Link } from "react-router-dom";
+import { useContext, useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import AppContext from "../context/AppContext";
 import { assets } from "../assets/assets";
+import RelatedDoctors from "./RelatedDoctors";
 
 export const Appointment = () => {
-  return (
-    <div className="relative overflow-hidden bg-blue-500 rounded-lg px-8 md:px-12 py-8 md:py-12">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-        {/* Left */}
-        <div className="flex-1 flex flex-col gap-4 max-w-2xl">
-          <h2 className="text-black text-2xl md:text-4xl font-semibold leading-tight">
-            Book Appointment
-            <br />
-            With 100+ Trusted Doctors
-          </h2>
+  const { doctorID } = useParams();
+  const { doctors } = useContext(AppContext);
+  const [doctor, setDoctor] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
 
-          <p className="text-black text-sm md:text-base leading-relaxed max-w-prose">
-            Schedule your appointment with our qualified healthcare professionals. Get expert medical care at your convenience.
-          </p>
+  // Days of the week for appointments
+  const daysOfWeek = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+  const [availableDays, setAvailableDays] = useState([]);
 
-          <Link
-            to="/doctors"
-            className="w-fit inline-flex items-center gap-2 bg-white text-gray-700 px-6 py-3 rounded-full text-sm font-medium hover:bg-gray-100 transform transition-transform duration-300 hover:translate-x-[10px]"
-          >
-            Sign Up
-            <img src={assets.arrow_icon} alt="Arrow Icon" className="w-4 h-4" />
-          </Link>
-        </div>
+  // Time slots
+  const timeSlots = [
+    "08:00 AM",
+    "08:30 AM",
+    "09:00 AM",
+    "09:30 AM",
+    "10:00 AM",
+    "10:30 AM",
+    "11:00 AM",
+    "11:30 AM",
+    "12:00 PM",
+    "02:00 PM",
+    "02:30 PM",
+    "03:00 PM",
+    "03:30 PM",
+    "04:00 PM",
+    "04:30 PM",
+    "05:00 PM",
+  ];
 
-        {/* Right */}
-        <div className="flex-shrink-0 w-44 md:w-64 lg:w-72 flex justify-end items-end">
-          <img
-            src={assets.appointment_img}
-            alt="Doctor"
-            className="w-full h-auto rounded-md object-contain"
-          />
+  useEffect(() => {
+    const foundDoctor = doctors.find((doc) => doc._id === doctorID);
+    setDoctor(foundDoctor);
+
+    // Generate next 7 days
+    const days = [];
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      days.push({
+        day: daysOfWeek[date.getDay()],
+        date: date.getDate(),
+        month: date.toLocaleString("default", { month: "short" }),
+        fullDate: date,
+      });
+    }
+    setAvailableDays(days);
+    setSelectedDay(days[0]); // Select first day by default
+  }, [doctorID, doctors]);
+
+  const handleBookAppointment = () => {
+    if (!selectedDay || !selectedTime) {
+      alert("Please select both a day and time slot");
+      return;
+    }
+    alert(
+      `Appointment booked with ${doctor.name} on ${selectedDay.day}, ${selectedDay.month} ${selectedDay.date} at ${selectedTime}`
+    );
+  };
+
+  if (!doctor) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <p className="text-gray-600 text-xl">Loading doctor information...</p>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Doctor Details Card */}
+      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden mb-12">
+        <div className="md:flex">
+          {/* Doctor Image */}
+          <div className="md:w-1/3 bg-gradient-to-br from-blue-50 to-blue-100 p-8 flex items-center justify-center">
+            <div className="relative">
+              <img
+                src={doctor.image}
+                alt={doctor.name}
+                className="w-64 h-64 object-cover rounded-full border-8 border-white shadow-xl"
+              />
+              <div className="absolute bottom-4 right-4 w-8 h-8 bg-green-500 rounded-full border-4 border-white"></div>
+            </div>
+          </div>
+
+          {/* Doctor Info */}
+          <div className="md:w-2/3 p-8">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                  {doctor.name}
+                </h1>
+                <p className="text-blue-600 text-lg font-semibold mb-3">
+                  {doctor.speciality}
+                </p>
+                <div className="flex items-center gap-4 mb-4">
+                  {doctor.degree && (
+                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                      {doctor.degree}
+                    </span>
+                  )}
+                  {doctor.experience && (
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                      {doctor.experience} Experience
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <img
+                  src={assets.verified_icon}
+                  alt="verified"
+                  className="w-6 h-6"
+                />
+                <span className="text-green-600 font-semibold">Verified</span>
+              </div>
+            </div>
+
+            {/* About */}
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+                <img src={assets.info_icon} alt="info" className="w-5 h-5" />
+                About
+              </h3>
+              <p className="text-gray-600 leading-relaxed">{doctor.about}</p>
+            </div>
+
+            {/* Fee and Address */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-gray-600 text-sm mb-1">Appointment Fee</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  Rs. {doctor.fees}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4">
+                <p className="text-gray-600 text-sm mb-1">Address</p>
+                <p className="text-gray-800 font-medium">
+                  {doctor.address.line1}
+                </p>
+                <p className="text-gray-600 text-sm">{doctor.address.line2}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Booking Section */}
+      <div className="bg-white rounded-2xl shadow-xl p-8 mb-12">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          Book Appointment
+        </h2>
+
+        {/* Select Day */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">
+            Select Day
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {availableDays.map((day, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setSelectedDay(day);
+                  setSelectedTime(null); // Reset time when day changes
+                }}
+                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 min-w-[100px] ${
+                  selectedDay?.date === day.date
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400"
+                }`}
+              >
+                <div className="text-center">
+                  <div className="text-sm font-bold">{day.day}</div>
+                  <div className="text-xs mt-1">
+                    {day.month} {day.date}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Select Time */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">
+            Select Time Slot
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {timeSlots.map((time, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedTime(time)}
+                className={`px-4 py-3 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 ${
+                  selectedTime === time
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400"
+                }`}
+              >
+                {time}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Book Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleBookAppointment}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-12 py-4 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            Book Appointment
+          </button>
+        </div>
+
+        {/* Selected Info */}
+        {selectedDay && selectedTime && (
+          <div className="mt-6 p-4 bg-blue-50 rounded-xl border-l-4 border-blue-500">
+            <p className="text-gray-700">
+              <span className="font-semibold">Selected:</span> {selectedDay.day}
+              , {selectedDay.month} {selectedDay.date} at {selectedTime}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Related Doctors */}
+      <RelatedDoctors doctorId={doctor._id} speciality={doctor.speciality} />
     </div>
   );
 };

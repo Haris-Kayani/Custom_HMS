@@ -7,8 +7,16 @@ import AppContext from "../context/AppContext";
 
 
 export const DoctorList = () => {
-  const [displayCount, setDisplayCount] = React.useState(5);
   const { doctors } = React.useContext(AppContext);
+  const scrollRef = React.useRef(null);
+
+  const scrollLeft = () => {
+    scrollRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+  };
+
+  const scrollRight = () => {
+    scrollRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+  };
 
   return (
     <div className="flex flex-col items-center gap-4 py-16 text-gray-800">
@@ -18,8 +26,8 @@ export const DoctorList = () => {
       </p>
 
       <div className="flex flex-col items-center gap-8 pt-5 w-full">
-        <div className="flex justify-center gap-8 w-full overflow-x-auto p-4">
-          {doctors.slice(0, displayCount).map((doc, index) => (
+        <div ref={scrollRef} className="flex justify-center gap-8 w-full overflow-x-auto p-4">
+          {doctors.map((doc, index) => (
             <div
               key={index}
               className="flex flex-col items-center text-center cursor-pointer gap-2 flex-shrink-0 hover:translate-y-[-10px] transition-transform duration-300 bg-white p-6 rounded-lg shadow-lg w-60"
@@ -40,14 +48,22 @@ export const DoctorList = () => {
             </div>
           ))}
         </div>
-        {displayCount < doctors.length && (
+        <div className="flex gap-6 mt-6">
           <button
-            onClick={() => setDisplayCount(Math.min(displayCount + 5, doctors.length))}
-            className="bg-blue-500 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors duration-300"
+            onClick={scrollLeft}
+            className="bg-blue-500 text-white rounded-full w-14 h-14 flex items-center justify-center hover:bg-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            aria-label="Scroll left"
           >
-            More
+            ←
           </button>
-        )}
+          <button
+            onClick={scrollRight}
+            className="bg-blue-500 text-white rounded-full w-14 h-14 flex items-center justify-center hover:bg-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            aria-label="Scroll right"
+          >
+            →
+          </button>
+        </div>
       </div>
     </div>
   );

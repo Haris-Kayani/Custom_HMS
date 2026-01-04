@@ -1,12 +1,18 @@
 import { NavLink, useNavigate, Link } from "react-router-dom";
 import { useState, useRef } from "react";
 import { assets } from "../assets/assets";
+import Login from "./Login";
+import SignUp from "./SignUp";
+import ForgotPassword from "./ForgotPassword";
 
 const NavBar = () => {
   const navigate = useNavigate();
   // const [menu, setMenu] = useState(false);
   const [token, setToken] = useState(true);
   const [open, setOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [signUpOpen, setSignUpOpen] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const timerRef = useRef(null);
 
   const handleMouseEnter = () => {
@@ -163,13 +169,35 @@ const NavBar = () => {
         // CTA Button
         <button
           onClick={() => {
-            navigate("/login");
+            setLoginOpen(true);
           }}
           className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-300"
         >
           Sign In
         </button>
       )}
+
+      {/* Login Modal */}
+      <Login 
+        isOpen={loginOpen} 
+        onClose={() => setLoginOpen(false)}
+        onSwitchToSignUp={() => setSignUpOpen(true)}
+        onSwitchToForgotPassword={() => setForgotPasswordOpen(true)}
+      />
+
+      {/* Sign Up Modal */}
+      <SignUp 
+        isOpen={signUpOpen} 
+        onClose={() => setSignUpOpen(false)}
+        onSwitchToLogin={() => setLoginOpen(true)}
+      />
+
+      {/* Forgot Password Modal */}
+      <ForgotPassword 
+        isOpen={forgotPasswordOpen} 
+        onClose={() => setForgotPasswordOpen(false)}
+        onSwitchToLogin={() => setLoginOpen(true)}
+      />
     </div>
   );
 };
