@@ -1,7 +1,11 @@
 import { useState } from "react";
-import AuthLogo from "./AuthLogo";
+import closeIcon from "../assets/close.png";
+import { useNavigate } from "react-router-dom";
+import HMS from "../assets/HMS.png";
+import { useLanguage } from "../context/LanguageContext";
 
 const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
+  const { t, theme } = useLanguage();
   const [email, setEmail] = useState("");
   const [step, setStep] = useState("email"); // "email", "otp", "newPassword"
   const [otp, setOtp] = useState("");
@@ -9,6 +13,10 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  const isDark = theme === "dark";
+  const themeClass = (light, dark) => (isDark ? dark : light);
 
   const handleSendOTP = () => {
     if (!email) {
@@ -60,7 +68,9 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
     }
 
     // Simulate password reset
-    setMessage("Password reset successfully. Please login with your new password.");
+    setMessage(
+      "Password reset successfully. Please login with your new password."
+    );
     setError("");
     setTimeout(() => {
       onClose();
@@ -79,21 +89,31 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
       ></div>
 
       {/* Modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white shadow-2xl w-full md:w-full md:max-w-md rounded-lg overflow-hidden animate-fadeInScale">
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div
+          className={`shadow-2xl w-full md:w-full md:max-w-md rounded-lg overflow-hidden animate-fadeInScale transition-colors duration-300 ${themeClass(
+            "bg-white",
+            "bg-gray-800"
+          )}`}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-6">
+          <div
+            className={`flex items-center justify-between px-5 py-6 ${themeClass(
+              "bg-gradient-to-r from-orange-500 to-orange-600",
+              "bg-gradient-to-r from-orange-600 to-orange-700"
+            )}`}
+          >
             <div className="flex-1 flex flex-col items-center">
-              <AuthLogo variant="hospital" size="w-20 h-20" iconSize="w-8 h-8" />
+              <img src={HMS} alt="Logo" className="w-20 h-20" />
               <h1 className="font-bold text-2xl text-white mt-2 drop-shadow-md">
                 Reset Password
               </h1>
             </div>
             <button
               onClick={onClose}
-              className="text-white text-2xl hover:text-gray-200 transition-colors duration-300"
+              className="close-btn transition-all duration-300 hover:scale-110 self-start"
             >
-              ✕
+              <img src={closeIcon} alt="Close" className="w-6 h-6" />
             </button>
           </div>
 
@@ -116,10 +136,21 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
             {/* Step 1: Email */}
             {step === "email" && (
               <>
-                <p className="text-gray-600 text-sm mb-5">
-                  Enter your email address and we'll send you an OTP to reset your password.
+                <p
+                  className={`text-sm mb-5 ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
+                  Enter your email address and we'll send you an OTP to reset
+                  your password.
                 </p>
-                <label className="font-semibold text-sm text-gray-600 pb-1 block">
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
                   Email Address
                 </label>
                 <input
@@ -130,7 +161,10 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
                     setError("");
                   }}
                   placeholder="your@email.com"
-                  className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-orange-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-orange-800"
+                  )}`}
                 />
 
                 <button
@@ -160,10 +194,21 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
             {/* Step 2: OTP Verification */}
             {step === "otp" && (
               <>
-                <p className="text-gray-600 text-sm mb-5">
-                  We've sent a 6-digit OTP to <span className="font-semibold">{email}</span>
+                <p
+                  className={`text-sm mb-5 ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
+                  We've sent a 6-digit OTP to{" "}
+                  <span className="font-semibold">{email}</span>
                 </p>
-                <label className="font-semibold text-sm text-gray-600 pb-1 block">
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
                   Enter OTP
                 </label>
                 <input
@@ -175,7 +220,10 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
                   }}
                   placeholder="000000"
                   maxLength="6"
-                  className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full text-center tracking-widest focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full text-center tracking-widest focus:outline-none focus:border-orange-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-orange-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-orange-800"
+                  )}`}
                 />
 
                 <button
@@ -212,10 +260,20 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
             {/* Step 3: New Password */}
             {step === "newPassword" && (
               <>
-                <p className="text-gray-600 text-sm mb-5">
+                <p
+                  className={`text-sm mb-5 ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
                   Create a new password for your account.
                 </p>
-                <label className="font-semibold text-sm text-gray-600 pb-1 block">
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
                   New Password
                 </label>
                 <input
@@ -226,10 +284,18 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
                     setError("");
                   }}
                   placeholder="At least 6 characters"
-                  className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-orange-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-orange-800"
+                  )}`}
                 />
 
-                <label className="font-semibold text-sm text-gray-600 pb-1 block">
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
                   Confirm Password
                 </label>
                 <input
@@ -239,8 +305,11 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
                     setConfirmPassword(e.target.value);
                     setError("");
                   }}
-                  placeholder="Re-enter your password"
-                  className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-300"
+                  placeholder="Confirm your new password"
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-orange-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-orange-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-orange-800"
+                  )}`}
                 />
 
                 <button
@@ -260,7 +329,7 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                     />
                   </svg>
                 </button>
@@ -269,9 +338,19 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 py-5 bg-gray-50">
+          <div
+            className={`py-5 border-t ${themeClass(
+              "bg-gray-50 border-gray-200",
+              "bg-gray-900 border-gray-700"
+            )}`}
+          >
             <div className="text-center whitespace-nowrap">
-              <p className="text-gray-600 text-sm mb-3">
+              <p
+                className={`text-sm mb-3 ${themeClass(
+                  "text-gray-600",
+                  "text-gray-400"
+                )}`}
+              >
                 Remember your password?{" "}
                 <button
                   onClick={() => {
@@ -284,30 +363,6 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
                 </button>
               </p>
             </div>
-          </div>
-
-          {/* Close Button */}
-          <div className="py-3 bg-gray-100 border-t border-gray-200 flex justify-center">
-            <button
-              onClick={onClose}
-              className="transition duration-200 px-6 py-2 cursor-pointer font-normal text-sm rounded-lg text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-4 h-4 inline-block align-text-top mr-1"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              <span className="inline-block ml-1">Close</span>
-            </button>
           </div>
         </div>
       </div>
@@ -326,6 +381,11 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
 
         .animate-fadeInScale {
           animation: fadeInScale 0.3s ease-out;
+        }
+
+        .close-btn:hover img {
+          filter: brightness(0) saturate(100%) invert(23%) sepia(77%)
+            saturate(2141%) hue-rotate(0deg) brightness(101%) contrast(101%);
         }
       `}</style>
     </>

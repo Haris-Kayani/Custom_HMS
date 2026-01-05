@@ -1,15 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthLogo from "./AuthLogo";
+import HMS from "../assets/HMS.png";
+import closeIcon from "../assets/close.png";
+import { useLanguage } from "../context/LanguageContext";
 
-const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) => {
+const Login = ({
+  isOpen,
+  onClose,
+  onSwitchToSignUp,
+  onSwitchToForgotPassword,
+}) => {
   const navigate = useNavigate();
+  const { t, theme } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const isDark = theme === "dark";
+  const themeClass = (light, dark) => (isDark ? dark : light);
+
   const handleLogin = () => {
     if (email && password) {
-      // You can add actual login logic here
       onClose();
       navigate("/my-profile");
     }
@@ -27,44 +37,70 @@ const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) 
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-        <div className="bg-white shadow-2xl w-full md:w-full md:max-w-md rounded-lg overflow-hidden animate-fadeInScale">
-                          <div className="flex items-center justify-between bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-6">
-                            <div className="flex-1 flex flex-col items-center">
-                              <AuthLogo variant="plus" size="w-20 h-20" iconSize="w-8 h-8" />
-                              <h1 className="font-bold text-2xl text-white mt-2 drop-shadow-md">
-                                National Police Hospital
-                              </h1>
-                            </div>
-                            <button
-                              onClick={onClose}
-                              className="text-white text-2xl hover:text-gray-200 transition-colors duration-200"
-                            >
-                              ✕
-                            </button>
-                          </div>
+        <div
+          className={`shadow-2xl w-full md:w-full md:max-w-md rounded-lg overflow-hidden animate-fadeInScale transition-colors duration-300 ${themeClass(
+            "bg-white",
+            "bg-gray-800"
+          )}`}
+        >
+          <div
+            className={`flex items-center justify-between px-5 py-6 ${themeClass(
+              "bg-gradient-to-r from-blue-500 to-blue-600",
+              "bg-gradient-to-r from-blue-600 to-blue-700"
+            )}`}
+          >
+            <div className="flex-1 flex flex-col items-center">
+              <img src={HMS} alt="Logo" className="w-20 h-20" />
+              <h1 className="font-bold text-2xl text-white mt-2 drop-shadow-md">
+                {t("login.title")}
+              </h1>
+            </div>
+            <button
+              onClick={onClose}
+              className="close-btn transition-all duration-300 hover:scale-110 self-start"
+            >
+              <img src={closeIcon} alt="Close" className="w-6 h-6" />
+            </button>
+          </div>
 
-                          {/* Form Section */}
+          {/* Form Section */}
           <div className="px-5 py-7">
-            <label className="font-semibold text-sm text-gray-600 pb-1 block">
-              E-mail
+            <label
+              className={`font-semibold text-sm pb-1 block ${themeClass(
+                "text-gray-600",
+                "text-gray-400"
+              )}`}
+            >
+              {t("login.email")}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+              placeholder={t("login.emailPlaceholder")}
+              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-blue-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                "border-gray-300 bg-white text-gray-900 focus:ring-blue-200",
+                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-blue-600"
+              )}`}
             />
 
-            <label className="font-semibold text-sm text-gray-600 pb-1 block">
-              Password
+            <label
+              className={`font-semibold text-sm pb-1 block ${themeClass(
+                "text-gray-600",
+                "text-gray-400"
+              )}`}
+            >
+              {t("login.password")}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+              placeholder={t("login.passwordPlaceholder")}
+              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-blue-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                "border-gray-300 bg-white text-gray-900 focus:ring-blue-200",
+                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-blue-600"
+              )}`}
             />
 
             <button
@@ -72,7 +108,7 @@ const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) 
               type="button"
               className="transition duration-200 bg-blue-500 hover:bg-blue-600 focus:bg-blue-700 focus:shadow-sm focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 text-white w-full py-2.5 rounded-lg text-sm shadow-md hover:shadow-lg font-semibold text-center inline-flex items-center justify-center gap-2"
             >
-              <span>Login</span>
+              <span>{t("login.loginButton")}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -91,7 +127,12 @@ const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) 
           </div>
 
           {/* Action Buttons */}
-          <div className="border-t border-gray-200 py-5">
+          <div
+            className={`border-t py-5 ${themeClass(
+              "border-gray-200",
+              "border-gray-700"
+            )}`}
+          >
             <div className="grid grid-cols-2 gap-1">
               <div className="text-center sm:text-left whitespace-nowrap">
                 <button
@@ -99,7 +140,10 @@ const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) 
                     onClose();
                     onSwitchToForgotPassword();
                   }}
-                  className="transition duration-200 mx-5 px-5 py-4 cursor-pointer font-normal text-sm rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-200 focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ring-inset"
+                  className={`transition duration-200 mx-5 px-5 py-4 cursor-pointer font-normal text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ring-inset ${themeClass(
+                    "text-gray-500 hover:bg-gray-100 focus:bg-gray-200",
+                    "text-gray-400 hover:bg-gray-700 focus:bg-gray-600"
+                  )}`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -115,11 +159,22 @@ const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) 
                       d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"
                     />
                   </svg>
-                  <span className="inline-block ml-1">Forgot Password</span>
+                  <span className="inline-block ml-1">
+                    {t("login.forgotPassword")}
+                  </span>
                 </button>
               </div>
               <div className="text-center sm:text-right whitespace-nowrap">
-                <button className="transition duration-200 mx-5 px-5 py-4 cursor-pointer font-normal text-sm rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-200 focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ring-inset">
+                <button
+                  onClick={() => {
+                    onClose();
+                    navigate("/contact");
+                  }}
+                  className={`transition duration-200 mx-5 px-5 py-4 cursor-pointer font-normal text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ring-inset ${themeClass(
+                    "text-gray-500 hover:bg-gray-100 focus:bg-gray-200",
+                    "text-gray-400 hover:bg-gray-700 focus:bg-gray-600"
+                  )}`}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -141,48 +196,33 @@ const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) 
           </div>
 
           {/* Sign Up Link */}
-          <div className="py-5 bg-gray-50 border-t border-gray-200">
+          <div
+            className={`py-5 border-t ${themeClass(
+              "bg-gray-50 border-gray-200",
+              "bg-gray-900 border-gray-700"
+            )}`}
+          >
             <div className="text-center whitespace-nowrap">
-              <p className="text-gray-600 text-sm mb-3">
-                Don't have an account?{" "}
+              <p
+                className={`text-sm mb-3 ${themeClass(
+                  "text-gray-600",
+                  "text-gray-400"
+                )}`}
+              >
+                {t("login.noAccount")}{" "}
                 <button
                   onClick={() => {
                     onClose();
                     onSwitchToSignUp();
                   }}
-                  className="text-blue-500 font-semibold hover:text-blue-600 transition-colors duration-200"
+                  className={`font-semibold transition-colors duration-200 ${themeClass(
+                    "text-blue-500 hover:text-blue-600",
+                    "text-blue-400 hover:text-blue-300"
+                  )}`}
                 >
-                  Sign up here
+                  {t("login.signUp")}
                 </button>
               </p>
-            </div>
-          </div>
-
-          {/* Back Button */}
-          <div className="py-5 bg-gray-50 border-t border-gray-200">
-            <div className="grid grid-cols-1">
-              <div className="text-center sm:text-left whitespace-nowrap">
-                <button
-                  onClick={onClose}
-                  className="transition duration-200 mx-5 px-5 py-4 cursor-pointer font-normal text-sm rounded-lg text-gray-500 hover:bg-gray-200 focus:outline-none focus:bg-gray-300 focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 ring-inset"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    className="w-4 h-4 inline-block align-text-top"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                    />
-                  </svg>
-                  <span className="inline-block ml-1">Close</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -202,6 +242,11 @@ const Login = ({ isOpen, onClose, onSwitchToSignUp, onSwitchToForgotPassword }) 
 
         .animate-fadeInScale {
           animation: fadeInScale 0.3s ease-out;
+        }
+
+        .close-btn:hover img {
+          filter: brightness(0) saturate(100%) invert(23%) sepia(77%)
+            saturate(2141%) hue-rotate(0deg) brightness(101%) contrast(101%);
         }
       `}</style>
     </>

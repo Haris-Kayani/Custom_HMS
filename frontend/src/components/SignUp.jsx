@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AuthLogo from "./AuthLogo";
+import closeIcon from "../assets/close.png";
+import HMS from "../assets/HMS.png";
+import { useLanguage } from "../context/LanguageContext";
 
 const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
   const navigate = useNavigate();
+  const { t, theme } = useLanguage();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -13,6 +16,9 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
     phone: "",
   });
   const [error, setError] = useState("");
+
+  const isDark = theme === "dark";
+  const themeClass = (light, dark) => (isDark ? dark : light);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,20 +68,30 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto">
-        <div className="bg-white shadow-2xl w-full md:w-full md:max-w-md rounded-lg overflow-hidden animate-fadeInScale my-8">
+        <div
+          className={`shadow-2xl w-full md:w-full md:max-w-md rounded-lg overflow-hidden animate-fadeInScale my-8 transition-colors duration-300 ${themeClass(
+            "bg-white",
+            "bg-gray-800"
+          )}`}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between bg-gradient-to-r from-green-500 to-green-600 px-5 py-6">
+          <div
+            className={`flex items-center justify-between px-5 py-6 ${themeClass(
+              "bg-gradient-to-r from-green-500 to-green-600",
+              "bg-gradient-to-r from-green-600 to-green-700"
+            )}`}
+          >
             <div className="flex-1 flex flex-col items-center">
-              <AuthLogo variant="plus" size="w-20 h-20" iconSize="w-8 h-8" />
+              <img src={HMS} alt="Logo" className="w-20 h-20" />
               <h1 className="font-bold text-2xl text-white mt-2 drop-shadow-md">
                 Create Account
               </h1>
             </div>
             <button
               onClick={onClose}
-              className="text-white text-2xl hover:text-gray-200 transition-colors duration-300"
+              className="close-btn transition-all duration-300 hover:scale-110 self-start"
             >
-              ✕
+              <img src={closeIcon} alt="Close" className="w-6 h-6" />
             </button>
           </div>
 
@@ -91,7 +107,12 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
             {/* First Name and Last Name */}
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div>
-                <label className="font-semibold text-sm text-gray-600 pb-1 block">
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
                   First Name
                 </label>
                 <input
@@ -100,11 +121,19 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="John"
-                  className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                  )}`}
                 />
               </div>
               <div>
-                <label className="font-semibold text-sm text-gray-600 pb-1 block">
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
                   Last Name
                 </label>
                 <input
@@ -113,13 +142,21 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Doe"
-                  className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                  )}`}
                 />
               </div>
             </div>
 
             {/* Email */}
-            <label className="font-semibold text-sm text-gray-600 pb-1 block">
+            <label
+              className={`font-semibold text-sm pb-1 block ${themeClass(
+                "text-gray-600",
+                "text-gray-400"
+              )}`}
+            >
               Email Address
             </label>
             <input
@@ -128,11 +165,19 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
               value={formData.email}
               onChange={handleChange}
               placeholder="john@example.com"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+              )}`}
             />
 
             {/* Phone */}
-            <label className="font-semibold text-sm text-gray-600 pb-1 block">
+            <label
+              className={`font-semibold text-sm pb-1 block ${themeClass(
+                "text-gray-600",
+                "text-gray-400"
+              )}`}
+            >
               Phone Number
             </label>
             <input
@@ -141,11 +186,19 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
               value={formData.phone}
               onChange={handleChange}
               placeholder="+1 (555) 000-0000"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+              )}`}
             />
 
             {/* Password */}
-            <label className="font-semibold text-sm text-gray-600 pb-1 block">
+            <label
+              className={`font-semibold text-sm pb-1 block ${themeClass(
+                "text-gray-600",
+                "text-gray-400"
+              )}`}
+            >
               Password
             </label>
             <input
@@ -154,11 +207,19 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
               value={formData.password}
               onChange={handleChange}
               placeholder="At least 6 characters"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+              )}`}
             />
 
             {/* Confirm Password */}
-            <label className="font-semibold text-sm text-gray-600 pb-1 block">
+            <label
+              className={`font-semibold text-sm pb-1 block ${themeClass(
+                "text-gray-600",
+                "text-gray-400"
+              )}`}
+            >
               Confirm Password
             </label>
             <input
@@ -167,7 +228,10 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Re-enter your password"
-              className="border-2 border-gray-300 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-300"
+              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+              )}`}
             />
 
             {/* Sign Up Button */}
@@ -195,45 +259,34 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
           </div>
 
           {/* Switch to Login */}
-          <div className="border-t border-gray-200 py-5 bg-gray-50">
+          <div
+            className={`py-5 border-t ${themeClass(
+              "bg-gray-50 border-gray-200",
+              "bg-gray-900 border-gray-700"
+            )}`}
+          >
             <div className="text-center whitespace-nowrap">
-              <p className="text-gray-600 text-sm mb-3">
+              <p
+                className={`text-sm mb-3 ${themeClass(
+                  "text-gray-600",
+                  "text-gray-400"
+                )}`}
+              >
                 Already have an account?{" "}
                 <button
                   onClick={() => {
                     onClose();
                     onSwitchToLogin();
                   }}
-                  className="text-green-500 font-semibold hover:text-green-600 transition-colors duration-200"
+                  className={`font-semibold transition-colors duration-200 ${themeClass(
+                    "text-green-500 hover:text-green-600",
+                    "text-green-400 hover:text-green-300"
+                  )}`}
                 >
                   Login here
                 </button>
               </p>
             </div>
-          </div>
-
-          {/* Close Button */}
-          <div className="py-3 bg-gray-100 border-t border-gray-200 flex justify-center">
-            <button
-              onClick={onClose}
-              className="transition duration-200 px-6 py-2 cursor-pointer font-normal text-sm rounded-lg text-gray-500 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="w-4 h-4 inline-block align-text-top mr-1"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              <span className="inline-block ml-1">Close</span>
-            </button>
           </div>
         </div>
       </div>
@@ -252,6 +305,11 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
 
         .animate-fadeInScale {
           animation: fadeInScale 0.3s ease-out;
+        }
+
+        .close-btn:hover img {
+          filter: brightness(0) saturate(100%) invert(23%) sepia(77%)
+            saturate(2141%) hue-rotate(0deg) brightness(101%) contrast(101%);
         }
       `}</style>
     </>

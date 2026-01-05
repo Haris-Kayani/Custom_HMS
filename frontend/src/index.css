@@ -1,7 +1,28 @@
 @import "tailwindcss";
 
+/* 
+  Root styling - Tailwind's dark: variant handles theme switching
+  The dark class on <html> triggers all dark: prefixed utilities
+*/
 html {
   scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-black transition-colors duration-300;
+}
+
+/* Dark mode overrides at body level */
+html.dark body {
+  @apply bg-gray-900 text-gray-100;
+}
+
+#root {
+  @apply min-h-screen bg-white;
+}
+
+html.dark #root {
+  @apply bg-gray-900;
 }
 
 ::-webkit-scrollbar {
