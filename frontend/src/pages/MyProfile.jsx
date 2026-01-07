@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import userIcon from "../assets/user.png";
 import settingsIcon from "../assets/cogwheel-hand-drawn-tool.png";
+import logoutIcon from "../assets/logout.png";
 import sunIcon from "../assets/sun.png";
 import moonIcon from "../assets/moon.png";
 import { useLanguage } from "../context/LanguageContext";
@@ -155,10 +156,12 @@ const MyProfile = () => {
               )}`}
             >
               <div className="flex items-center gap-3">
-                <LogOut
+                <img
+                  src={logoutIcon}
+                  alt="Logout"
                   className={`w-5 h-5 ${themeClass(
-                    "text-gray-600",
-                    "text-gray-400"
+                    "",
+                    "invert brightness-90"
                   )}`}
                 />
                 <span
