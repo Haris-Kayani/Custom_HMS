@@ -1,13 +1,34 @@
-import React from "react";
-import { specialityData } from "../assets/assets";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext";
+import API from "../services/api";
+import { specialityData } from "../assets/assets";
 
 export const SpecialistsMenu = () => {
   const { t, theme } = useLanguage();
+  const [specialists, setSpecialists] = useState([]);
+
+  useEffect(() => {
+    const fetchSpecialists = async () => {
+      try {
+        const { data } = await API.get("/specialists");
+        setSpecialists(data.data);
+      } catch (error) {
+        console.error("Failed to fetch specialists", error);
+      }
+    };
+    fetchSpecialists();
+  }, []);
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
+
+  const getSpecialityImage = (name) => {
+    const speciality = specialityData.find(
+      (s) => s.speciality.toLowerCase() === name.toLowerCase()
+    );
+    return speciality ? speciality.image : "https://via.placeholder.com/150";
+  };
 
   return (
     <div
@@ -39,10 +60,10 @@ export const SpecialistsMenu = () => {
 
       {/* Responsive grid for specialist cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 pt-8 w-full max-w-6xl px-4">
-        {specialityData.map((item) => (
+        {specialists.map((item) => (
           <Link
-            to={`/doctors/${item.speciality}`}
-            key={item.speciality}
+            to={`/doctors?speciality=${item.name}`}
+            key={item._id}
             className={`group relative flex flex-col items-center justify-center gap-3 rounded-xl border p-4 text-center shadow-sm outline-none ring-blue-500 ring-offset-2 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-105 hover:shadow-lg focus-visible:ring-2 active:scale-95 ${themeClass(
               "border-gray-200 bg-white",
               "border-gray-700 bg-gray-800"
@@ -57,8 +78,8 @@ export const SpecialistsMenu = () => {
             >
               <img
                 className="h-11 w-11 object-contain"
-                src={item.image}
-                alt=""
+                src={getSpecialityImage(item.name)}
+                alt={item.name}
               />
             </div>
             {/* Label */}
@@ -68,7 +89,7 @@ export const SpecialistsMenu = () => {
                 "text-gray-300"
               )}`}
             >
-              {item.speciality}
+              {item.name}
             </p>
           </Link>
         ))}

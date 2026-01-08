@@ -1,23 +1,32 @@
 import { useContext, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import AppContext from "../context/AppContext";
 import { assets } from "../assets/assets";
 import RelatedDoctors from "./RelatedDoctors";
 import { useLanguage } from "../context/LanguageContext";
+import API from "../services/api";
+
+const DAYS_OF_WEEK = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
 export const Appointment = () => {
   const { doctorID } = useParams();
-  const { doctors } = useContext(AppContext);
+  const navigate = useNavigate();
+  const { auth } = useContext(AppContext);
   const { theme } = useLanguage();
   const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  const [reason, setReason] = useState("");
+  const [symptoms, setSymptoms] = useState("");
+  const [appointmentType, setAppointmentType] = useState("In-Person");
+  const [notes, setNotes] = useState("");
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
 
-  // Days of the week for appointments
-  const daysOfWeek = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
   const [availableDays, setAvailableDays] = useState([]);
 
   // Time slots
@@ -41,8 +50,20 @@ export const Appointment = () => {
   ];
 
   useEffect(() => {
-    const foundDoctor = doctors.find((doc) => doc._id === doctorID);
-    setDoctor(foundDoctor);
+    const fetchDoctor = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data } = await API.get(`/doctors/${doctorID}`);
+        setDoctor(data.data || data);
+      } catch (err) {
+        const message = err.response?.data?.message || "Failed to load doctor";
+        setError(message);
+        toast.error(message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     // Generate next 7 days
     const days = [];
@@ -51,7 +72,7 @@ export const Appointment = () => {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       days.push({
-        day: daysOfWeek[date.getDay()],
+        day: DAYS_OF_WEEK[date.getDay()],
         date: date.getDate(),
         month: date.toLocaleString("default", { month: "short" }),
         fullDate: date,
@@ -59,19 +80,51 @@ export const Appointment = () => {
     }
     setAvailableDays(days);
     setSelectedDay(days[0]); // Select first day by default
-  }, [doctorID, doctors]);
 
-  const handleBookAppointment = () => {
-    if (!selectedDay || !selectedTime) {
-      alert("Please select both a day and time slot");
+    fetchDoctor();
+  }, [doctorID]);
+
+  const handleBookAppointment = async () => {
+    if (!auth?.token) {
+      toast.error("Please login to book an appointment");
+      navigate("/my-profile");
       return;
     }
-    alert(
-      `Appointment booked with ${doctor.name} on ${selectedDay.day}, ${selectedDay.month} ${selectedDay.date} at ${selectedTime}`
-    );
+
+    if (!selectedDay || !selectedTime) {
+      toast.error("Please select both a day and time slot");
+      return;
+    }
+
+    if (!doctor?._id) {
+      toast.error("Doctor information is missing");
+      return;
+    }
+
+    const payload = {
+      doctor: doctor._id,
+      appointmentDate: selectedDay.fullDate.toISOString(),
+      appointmentTime: selectedTime,
+      reasonForVisit: reason,
+      symptoms: symptoms
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      appointmentType,
+      notes,
+    };
+
+    try {
+      await API.post("/appointments", payload);
+      toast.success("Appointment booked successfully");
+      navigate("/my-appointments");
+    } catch (err) {
+      const message = err.response?.data?.message || "Failed to book appointment";
+      toast.error(message);
+    }
   };
 
-  if (!doctor) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -82,6 +135,23 @@ export const Appointment = () => {
         </div>
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <p className={`text-xl ${themeClass("text-gray-600", "text-gray-400")}`}>
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!doctor) {
+    return null;
   }
 
   return (
@@ -121,7 +191,7 @@ export const Appointment = () => {
                     "text-white"
                   )}`}
                 >
-                  {doctor.name}
+                  Dr. {doctor.firstName} {doctor.lastName}
                 </h1>
                 <p
                   className={`text-lg font-semibold mb-3 ${themeClass(
@@ -129,7 +199,7 @@ export const Appointment = () => {
                     "text-blue-400"
                   )}`}
                 >
-                  {doctor.speciality}
+                  {doctor.speciality.name}
                 </p>
                 <div className="flex items-center gap-4 mb-4">
                   {doctor.degree && (
@@ -230,7 +300,7 @@ export const Appointment = () => {
                     "text-white"
                   )}`}
                 >
-                  {doctor.address.line1}
+                  {doctor.address?.line1 || "N/A"}
                 </p>
                 <p
                   className={`text-sm ${themeClass(
@@ -238,7 +308,7 @@ export const Appointment = () => {
                     "text-gray-400"
                   )}`}
                 >
-                  {doctor.address.line2}
+                  {doctor.address?.line2 || ""}
                 </p>
               </div>
             </div>
@@ -261,6 +331,49 @@ export const Appointment = () => {
         >
           Book Appointment
         </h2>
+
+        {/* Appointment Form */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div>
+            <label className={`block text-sm font-medium ${themeClass("text-gray-700", "text-gray-300")}`}>Reason for Visit</label>
+            <input
+              type="text"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${themeClass("border-gray-300", "bg-gray-700 border-gray-600 text-white")}`}
+            />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium ${themeClass("text-gray-700", "text-gray-300")}`}>Symptoms (comma separated)</label>
+            <input
+              type="text"
+              value={symptoms}
+              onChange={(e) => setSymptoms(e.target.value)}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${themeClass("border-gray-300", "bg-gray-700 border-gray-600 text-white")}`}
+            />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium ${themeClass("text-gray-700", "text-gray-300")}`}>Appointment Type</label>
+            <select
+              value={appointmentType}
+              onChange={(e) => setAppointmentType(e.target.value)}
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${themeClass("border-gray-300", "bg-gray-700 border-gray-600 text-white")}`}
+            >
+              <option>In-Person</option>
+              <option>Video Call</option>
+              <option>Phone Call</option>
+            </select>
+          </div>
+          <div>
+            <label className={`block text-sm font-medium ${themeClass("text-gray-700", "text-gray-300")}`}>Notes</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows="3"
+              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${themeClass("border-gray-300", "bg-gray-700 border-gray-600 text-white")}`}
+            ></textarea>
+          </div>
+        </div>
 
         {/* Select Day */}
         <div className="mb-8">
@@ -357,7 +470,7 @@ export const Appointment = () => {
       </div>
 
       {/* Related Doctors */}
-      <RelatedDoctors doctorId={doctor._id} speciality={doctor.speciality} />
+      <RelatedDoctors doctorId={doctor._id} speciality={doctor.speciality.name} />
     </div>
   );
 };

@@ -1,49 +1,76 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import userIcon from "../assets/user.png";
-import settingsIcon from "../assets/cogwheel-hand-drawn-tool.png";
-import logoutIcon from "../assets/logout.png";
-import sunIcon from "../assets/sun.png";
-import moonIcon from "../assets/moon.png";
+import { assets } from "../assets/assets";
 import { useLanguage } from "../context/LanguageContext";
+import AppContext from "../context/AppContext";
+import API from "../services/api";
 
 const MyProfile = () => {
   const navigate = useNavigate();
   const { theme, language, setThemeMode, setLanguageMode, t } = useLanguage();
+  const { auth, setAuth, logout } = useContext(AppContext);
   const [activeSection, setActiveSection] = useState("profile");
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
 
   const [profileData, setProfileData] = useState({
-    name: "Your name",
-    email: "yourname@gmail.com",
+    firstName: "",
+    lastName: "",
+    email: "",
     mobile: "",
-    profileImage: new URL("../assets/user.png", import.meta.url).href,
+    image: "",
   });
+
+  useEffect(() => {
+    if (auth.user) {
+      setProfileData({
+        firstName: auth.user.firstName || "",
+        lastName: auth.user.lastName || "",
+        email: auth.user.email || "",
+        mobile: auth.user.mobile || "",
+        image: auth.user.image || assets.user_icon,
+      });
+    }
+  }, [auth.user]);
 
   const handleInputChange = (field, value) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSaveChange = () => {
-    console.log("Profile updated:", profileData);
+  const handleSaveChange = async () => {
+    try {
+      const { data } = await API.put("/users/profile", profileData);
+      setAuth((prev) => ({ ...prev, user: data.data }));
+      alert("Profile updated successfully");
+    } catch (error) {
+      console.error("Failed to update profile", error);
+      alert("Failed to update profile");
+    }
   };
 
   const handleLogout = () => {
-    console.log("Logging out...");
+    logout();
     navigate("/");
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData((prev) => ({ ...prev, profileImage: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append("image", file);
+      try {
+        const { data } = await API.put("/users/profile/picture", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        setAuth((prev) => ({ ...prev, user: data.data }));
+      } catch (error) {
+        console.error("Failed to upload image", error);
+        alert("Failed to upload image");
+      }
     }
   };
 
@@ -65,7 +92,7 @@ const MyProfile = () => {
             )}`}
           >
             <img
-              src={profileData.profileImage}
+              src={profileData.image}
               alt="Profile"
               className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
             />
@@ -76,7 +103,7 @@ const MyProfile = () => {
                   "text-white"
                 )}`}
               >
-                {profileData.name}
+                {profileData.firstName} {profileData.lastName}
               </h3>
               <p className={themeClass("text-gray-500", "text-gray-400")}>
                 {profileData.email}
@@ -96,7 +123,7 @@ const MyProfile = () => {
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={userIcon}
+                  src={assets.user_icon}
                   alt="Profile"
                   className={`w-5 h-5 ${themeClass("", "invert brightness-90")}`}
                 />
@@ -127,7 +154,7 @@ const MyProfile = () => {
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={settingsIcon}
+                  src={assets.settings_icon}
                   alt="Settings"
                   className={`w-5 h-5 ${themeClass("", "invert brightness-90")}`}
                 />
@@ -157,7 +184,7 @@ const MyProfile = () => {
             >
               <div className="flex items-center gap-3">
                 <img
-                  src={logoutIcon}
+                  src={assets.logout_icon}
                   alt="Logout"
                   className={`w-5 h-5 ${themeClass(
                     "",
@@ -195,7 +222,7 @@ const MyProfile = () => {
               >
                 <div className="relative group">
                   <img
-                    src={profileData.profileImage}
+                    src={profileData.image}
                     alt="Profile"
                     className={`w-24 h-24 rounded-full object-cover border-4 shadow-md ${themeClass(
                       "border-gray-200",
@@ -238,7 +265,7 @@ const MyProfile = () => {
                       "text-white"
                     )}`}
                   >
-                    {profileData.name}
+                    {profileData.firstName} {profileData.lastName}
                   </h2>
                   <p className={themeClass("text-gray-500", "text-gray-400")}>
                     {profileData.email}
@@ -248,7 +275,7 @@ const MyProfile = () => {
 
               {/* Profile Form Fields */}
               <div className="space-y-6">
-                {/* Name Field */}
+                {/* First Name Field */}
                 <div
                   className={`flex items-center justify-between py-4 border-b ${themeClass(
                     "border-gray-200",
@@ -261,17 +288,44 @@ const MyProfile = () => {
                       "text-gray-400"
                     )}`}
                   >
-                    {t("myProfile.profile.fullName")}
+                    First Name
                   </label>
                   <input
                     type="text"
-                    value={profileData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    value={profileData.firstName}
+                    onChange={(e) => handleInputChange("firstName", e.target.value)}
                     className={`flex-1 text-right bg-transparent border-none outline-none transition-colors ${themeClass(
                       "text-gray-800 focus:text-blue-600",
                       "text-gray-200 focus:text-blue-400"
                     )}`}
-                    placeholder="your name"
+                    placeholder="Your first name"
+                  />
+                </div>
+
+                {/* Last Name Field */}
+                <div
+                  className={`flex items-center justify-between py-4 border-b ${themeClass(
+                    "border-gray-200",
+                    "border-gray-700"
+                  )}`}
+                >
+                  <label
+                    className={`font-medium w-40 ${themeClass(
+                      "text-gray-600",
+                      "text-gray-400"
+                    )}`}
+                  >
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.lastName}
+                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    className={`flex-1 text-right bg-transparent border-none outline-none transition-colors ${themeClass(
+                      "text-gray-800 focus:text-blue-600",
+                      "text-gray-200 focus:text-blue-400"
+                    )}`}
+                    placeholder="Your last name"
                   />
                 </div>
 
@@ -382,7 +436,7 @@ const MyProfile = () => {
                             )
                       }`}
                     >
-                      <img src={sunIcon} alt="Light" className="w-5 h-5" />
+                      <img src={assets.sun_icon} alt="Light" className="w-5 h-5" />
                       <span>{t("myProfile.settings.light")}</span>
                     </button>
                     <button
@@ -396,7 +450,7 @@ const MyProfile = () => {
                             )
                       }`}
                     >
-                      <img src={moonIcon} alt="Dark" className="w-5 h-5" />
+                      <img src={assets.moon_icon} alt="Dark" className="w-5 h-5" />
                       <span>{t("myProfile.settings.dark")}</span>
                     </button>
                   </div>

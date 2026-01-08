@@ -1,0 +1,22 @@
+{
+  "env": {
+    "node": true,
+    "es2022": true
+  },
+  "globals": {
+    "process": "readonly",
+    "Buffer": "readonly",
+    "__dirname": "readonly",
+    "__filename": "readonly",
+    "global": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "extends": ["eslint:recommended"],
+  "rules": {
+    "no-unused-vars": ["error", { "varsIgnorePattern": "^_" }],
+    "no-console": "off"
+  }
+}

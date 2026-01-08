@@ -1,13 +1,14 @@
-import { useContext, useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import AppContext from "../context/AppContext";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext";
+import API from "../services/api";
 
 const Doctors = () => {
   const navigate = useNavigate();
   const { speciality: urlSpeciality } = useParams();
-  const { doctors } = useContext(AppContext);
   const { theme } = useLanguage();
+  const [doctors, setDoctors] = useState([]);
+  const [specialities, setSpecialities] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [selectedSpeciality, setSelectedSpeciality] = useState("");
   const scrollRef = useRef(null);
@@ -15,29 +16,37 @@ const Doctors = () => {
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
 
-  const specialities = [...new Set(doctors.map((doc) => doc.speciality))].sort();
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const { data } = await API.get(`/doctors${urlSpeciality ? `?speciality=${urlSpeciality}` : ''}`);
+        setDoctors(data.data);
+        setFilteredDoctors(data.data);
+      } catch (error) {
+        console.error("Failed to fetch doctors", error);
+      }
+    };
 
-  const filterDoctorsBySpecialty = (speciality) => {
-    if (!speciality || speciality === "all") {
-      setFilteredDoctors(doctors);
-      setSelectedSpeciality("");
-      return;
-    }
-    const filtered = doctors.filter(
-      (doc) => doc.speciality.toLowerCase() === speciality.toLowerCase()
-    );
-    setFilteredDoctors(filtered);
-    setSelectedSpeciality(speciality);
-  };
+    const fetchSpecialities = async () => {
+      try {
+        const { data } = await API.get("/specialists");
+        setSpecialities(data.data);
+      } catch (error) {
+        console.error("Failed to fetch specialities", error);
+      }
+    };
+
+    fetchDoctors();
+    fetchSpecialities();
+  }, [urlSpeciality]);
 
   useEffect(() => {
     if (urlSpeciality) {
-      filterDoctorsBySpecialty(urlSpeciality);
+      setSelectedSpeciality(urlSpeciality);
     } else {
-      setFilteredDoctors(doctors);
       setSelectedSpeciality("");
     }
-  }, [doctors, urlSpeciality]);
+  }, [urlSpeciality]);
 
   const handleSpecialityClick = (spec) => {
     if (spec === "all") {
@@ -92,10 +101,10 @@ const Doctors = () => {
         {/* Speciality Filter Buttons */}
         {specialities.map((spec) => (
           <button
-            key={spec}
-            onClick={() => handleSpecialityClick(spec)}
+            key={spec._id}
+            onClick={() => handleSpecialityClick(spec.name)}
             className={`px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 ${
-              selectedSpeciality.toLowerCase() === spec.toLowerCase()
+              selectedSpeciality.toLowerCase() === spec.name.toLowerCase()
                 ? "bg-blue-600 text-white"
                 : themeClass(
                     "bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400",
@@ -103,7 +112,7 @@ const Doctors = () => {
                   )
             }`}
           >
-            {spec}
+            {spec.name}
           </button>
         ))}
       </div>
@@ -148,8 +157,8 @@ const Doctors = () => {
                 onClick={() => navigate(`/appointment/${doc._id}`)}
               >
                 <img
-                  src={doc.image}
-                  alt={doc.name}
+                  src={doc.image || "https://via.placeholder.com/150"}
+                  alt={`${doc.firstName} ${doc.lastName}`}
                   className={`w-32 h-32 object-cover rounded-full mb-4 border-4 ${themeClass(
                     "border-blue-100",
                     "border-blue-900"
@@ -161,7 +170,7 @@ const Doctors = () => {
                     "text-white"
                   )}`}
                 >
-                  {doc.name}
+                  Dr. {doc.firstName} {doc.lastName}
                 </h2>
                 <p
                   className={`text-sm ${themeClass(
@@ -169,7 +178,7 @@ const Doctors = () => {
                     "text-gray-400"
                   )}`}
                 >
-                  {doc.speciality}
+                  {doc.speciality.name}
                 </p>
                 {doc.degree && (
                   <p
@@ -188,7 +197,7 @@ const Doctors = () => {
                       "text-gray-500"
                     )}`}
                   >
-                    {doc.experience}
+                    {doc.experience} years
                   </p>
                 )}
                 <button

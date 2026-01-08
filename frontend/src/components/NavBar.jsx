@@ -1,15 +1,16 @@
 import { NavLink, useNavigate, Link } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
 import { assets } from "../assets/assets";
 import Login from "./Login";
 import SignUp from "./SignUp";
 import ForgotPassword from "./ForgotPassword";
 import { useLanguage } from "../context/LanguageContext";
+import AppContext from "../context/AppContext";
 
 const NavBar = () => {
   const navigate = useNavigate();
   const { t, theme } = useLanguage();
-  const [token, setToken] = useState(true);
+  const { auth, logout } = useContext(AppContext);
   const [open, setOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
@@ -175,7 +176,7 @@ const NavBar = () => {
       {/* ============================================
           RIGHT SIDE: Profile Dropdown or CTA Button
           ============================================ */}
-      {token ? (
+      {auth.token ? (
         // Profile Dropdown
         <div
           className="flex items-center gap-2 cursor-pointer relative"
@@ -184,7 +185,7 @@ const NavBar = () => {
         >
           <img
             className="w-8 rounded-full"
-            src={assets.profile_pic}
+            src={auth.user?.image || assets.profile_pic}
             alt="container_profile_pic"
           />
           <img
@@ -234,7 +235,7 @@ const NavBar = () => {
                     "text-gray-300 hover:text-white hover:font-bold"
                   )}`}
                   onClick={() => {
-                    setToken(false);
+                    logout();
                     navigate("/");
                     setOpen(false);
                   }}

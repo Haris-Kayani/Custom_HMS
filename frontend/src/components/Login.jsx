@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import HMS from "../assets/HMS.png";
-import closeIcon from "../assets/close.png";
+import { assets } from "../assets/assets";
 import { useLanguage } from "../context/LanguageContext";
+import AppContext from "../context/AppContext";
+import API from "../services/api";
+import { toast } from "sonner";
 
 const Login = ({
   isOpen,
@@ -12,16 +14,41 @@ const Login = ({
 }) => {
   const navigate = useNavigate();
   const { t, theme } = useLanguage();
+  const { setAuth } = useContext(AppContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
 
-  const handleLogin = () => {
-    if (email && password) {
+  // Ensure fields are blank whenever the modal opens (e.g., after logout)
+  useEffect(() => {
+    if (isOpen) {
+      setEmail("");
+      setPassword("");
+      setError("");
+    }
+  }, [isOpen]);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      const message = "Please enter email and password";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+    try {
+      const { data } = await API.post("/auth/login", { email, password });
+      localStorage.setItem("token", data.token);
+      setAuth({ token: data.token, user: data.user });
       onClose();
+      toast.success("Logged in successfully");
       navigate("/my-profile");
+    } catch (err) {
+      const message = err.response?.data?.message || "Login failed";
+      setError(message);
+      toast.error(message);
     }
   };
 
@@ -50,7 +77,7 @@ const Login = ({
             )}`}
           >
             <div className="flex-1 flex flex-col items-center">
-              <img src={HMS} alt="Logo" className="w-20 h-20" />
+              <img src={assets.HMS} alt="Logo" className="w-20 h-20" />
               <h1 className="font-bold text-2xl text-white mt-2 drop-shadow-md">
                 {t("login.title")}
               </h1>
@@ -59,12 +86,17 @@ const Login = ({
               onClick={onClose}
               className="close-btn transition-all duration-300 hover:scale-110 self-start"
             >
-              <img src={closeIcon} alt="Close" className="w-6 h-6" />
+              <img src={assets.close_icon} alt="Close" className="w-6 h-6" />
             </button>
           </div>
 
           {/* Form Section */}
           <div className="px-5 py-7">
+            {error && (
+              <div className="mb-5 p-3 bg-red-100 border-l-4 border-red-500 text-red-700 text-sm rounded">
+                {error}
+              </div>
+            )}
             <label
               className={`font-semibold text-sm pb-1 block ${themeClass(
                 "text-gray-600",
@@ -77,6 +109,7 @@ const Login = ({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="off"
               placeholder={t("login.emailPlaceholder")}
               className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-blue-500 focus:ring-2 transition-all duration-300 ${themeClass(
                 "border-gray-300 bg-white text-gray-900 focus:ring-blue-200",
@@ -96,6 +129,7 @@ const Login = ({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="off"
               placeholder={t("login.passwordPlaceholder")}
               className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-blue-500 focus:ring-2 transition-all duration-300 ${themeClass(
                 "border-gray-300 bg-white text-gray-900 focus:ring-blue-200",

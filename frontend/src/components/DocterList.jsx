@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import AppContext from "../context/AppContext";
 import { useLanguage } from "../context/LanguageContext";
+import API from "../services/api";
 
 export const DoctorList = () => {
-  const { doctors } = React.useContext(AppContext);
+  const [doctors, setDoctors] = useState([]);
   const { t, theme } = useLanguage();
-  const scrollRef = React.useRef(null);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const { data } = await API.get("/doctors");
+        setDoctors(data.data);
+      } catch (error) {
+        console.error("Failed to fetch doctors", error);
+      }
+    };
+    fetchDoctors();
+  }, []);
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
@@ -47,15 +59,15 @@ export const DoctorList = () => {
               )}`}
             >
               <img
-                src={doc.image}
-                alt={doc.name}
+                src={doc.image || "https://via.placeholder.com/150"}
+                alt={`${doc.firstName} ${doc.lastName}`}
                 className={`w-32 h-32 object-cover rounded-full mb-4 border-4 ${themeClass(
                   "border-blue-100",
                   "border-blue-900"
                 )}`}
               />
               <h2 className={`font-semibold text-xl ${themeClass("", "text-white")}`}>
-                {doc.name}
+                Dr. {doc.firstName} {doc.lastName}
               </h2>
               <p className={`text-gray-500 ${themeClass("", "text-gray-400")} text-sm`}>
                 {doc.speciality}

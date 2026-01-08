@@ -1,12 +1,24 @@
 import { Link } from "react-router-dom";
-import { useContext } from "react";
+import { useState, useEffect } from "react";
 import { assets } from "../assets/assets";
-import AppContext from "../context/AppContext";
+import API from "../services/api";
 import { useLanguage } from "../context/LanguageContext";
 
 const HeaderBanner = () => {
-  const { doctors } = useContext(AppContext);
+  const [doctors, setDoctors] = useState([]);
   const { t, theme } = useLanguage();
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const { data } = await API.get("/doctors?limit=3");
+        setDoctors(data.data);
+      } catch (error) {
+        console.error("Failed to fetch doctors", error);
+      }
+    };
+    fetchDoctors();
+  }, []);
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
@@ -35,7 +47,7 @@ const HeaderBanner = () => {
               {doctors.slice(0, 3).map((doc) => (
                 <img
                   key={doc._id}
-                  src={doc.image}
+                  src={doc.image || assets.profile_pic}
                   alt={doc.name}
                   className="w-12 h-12 rounded-full border-2 border-white shadow-md object-cover"
                 />

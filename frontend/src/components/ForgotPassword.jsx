@@ -1,11 +1,10 @@
 import { useState } from "react";
-import closeIcon from "../assets/close.png";
-import { useNavigate } from "react-router-dom";
-import HMS from "../assets/HMS.png";
+import { assets } from "../assets/assets";
 import { useLanguage } from "../context/LanguageContext";
+import { toast } from "sonner";
 
 const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
-  const { t, theme } = useLanguage();
+  const { theme } = useLanguage();
   const [email, setEmail] = useState("");
   const [step, setStep] = useState("email"); // "email", "otp", "newPassword"
   const [otp, setOtp] = useState("");
@@ -13,19 +12,22 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const navigate = useNavigate();
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
 
   const handleSendOTP = () => {
     if (!email) {
-      setError("Please enter your email address");
+      const message = "Please enter your email address";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     if (!email.includes("@")) {
-      setError("Please enter a valid email address");
+      const message = "Please enter a valid email address";
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -33,37 +35,49 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
     setMessage("OTP sent to your email address");
     setError("");
     setStep("otp");
+    toast.success("OTP sent successfully");
   };
 
   const handleVerifyOTP = () => {
     if (!otp) {
-      setError("Please enter the OTP");
+      const message = "Please enter the OTP";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     if (otp.length !== 6) {
-      setError("OTP must be 6 digits");
+      const message = "OTP must be 6 digits";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     setMessage("OTP verified successfully");
     setError("");
     setStep("newPassword");
+    toast.success("OTP verified");
   };
 
   const handleResetPassword = () => {
     if (!newPassword || !confirmPassword) {
-      setError("Please enter both passwords");
+      const message = "Please enter both passwords";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      const message = "Passwords do not match";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
+      const message = "Password must be at least 6 characters";
+      setError(message);
+      toast.error(message);
       return;
     }
 
@@ -72,6 +86,7 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
       "Password reset successfully. Please login with your new password."
     );
     setError("");
+    toast.success("Password reset successfully");
     setTimeout(() => {
       onClose();
       onSwitchToLogin();
@@ -104,7 +119,7 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
             )}`}
           >
             <div className="flex-1 flex flex-col items-center">
-              <img src={HMS} alt="Logo" className="w-20 h-20" />
+              <img src={assets.HMS} alt="Logo" className="w-20 h-20" />
               <h1 className="font-bold text-2xl text-white mt-2 drop-shadow-md">
                 Reset Password
               </h1>
@@ -113,7 +128,7 @@ const ForgotPassword = ({ isOpen, onClose, onSwitchToLogin }) => {
               onClick={onClose}
               className="close-btn transition-all duration-300 hover:scale-110 self-start"
             >
-              <img src={closeIcon} alt="Close" className="w-6 h-6" />
+              <img src={assets.close_icon} alt="Close" className="w-6 h-6" />
             </button>
           </div>
 

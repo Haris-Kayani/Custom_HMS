@@ -9,10 +9,12 @@ import MyAppointments from "./pages/MyAppointments";
 import { Appointment } from "./components/Appointment";
 import NavBar from "./components/NavBar";
 import { Footer } from "./components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const App = () => {
   return (
     <div className="mx-4 sm:mx-[10%]">
+      <Toaster />
       <NavBar/>
       <Routes>
         <Route path="/" element={<Home />} />

@@ -1,19 +1,20 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import closeIcon from "../assets/close.png";
-import HMS from "../assets/HMS.png";
+import { assets } from "../assets/assets";
 import { useLanguage } from "../context/LanguageContext";
+import API from "../services/api";
+import { toast } from "sonner";
 
 const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
-  const navigate = useNavigate();
-  const { t, theme } = useLanguage();
+  const { theme } = useLanguage();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    phone: "",
+    mobile: "",
+    dateOfBirth: "",
+    gender: "",
   });
   const [error, setError] = useState("");
 
@@ -29,31 +30,47 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
     setError("");
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (
       !formData.firstName ||
       !formData.lastName ||
       !formData.email ||
       !formData.password ||
-      !formData.confirmPassword
+      !formData.confirmPassword ||
+      !formData.mobile ||
+      !formData.dateOfBirth ||
+      !formData.gender
     ) {
-      setError("All fields are required");
+      const message = "All fields are required";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      const message = "Passwords do not match";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
+      const message = "Password must be at least 6 characters";
+      setError(message);
+      toast.error(message);
       return;
     }
 
-    // You can add actual signup logic here
-    onClose();
-    navigate("/");
+    try {
+      await API.post("/auth/register", formData);
+      onClose();
+      onSwitchToLogin();
+      toast.success("Account created successfully. Please log in.");
+    } catch (err) {
+      const message = err.response?.data?.message || err.response?.data?.error || "Sign up failed";
+      setError(message);
+      toast.error(message);
+    }
   };
 
   if (!isOpen) return null;
@@ -82,7 +99,7 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
             )}`}
           >
             <div className="flex-1 flex flex-col items-center">
-              <img src={HMS} alt="Logo" className="w-20 h-20" />
+              <img src={assets.HMS} alt="Logo" className="w-20 h-20" />
               <h1 className="font-bold text-2xl text-white mt-2 drop-shadow-md">
                 Create Account
               </h1>
@@ -91,7 +108,7 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
               onClick={onClose}
               className="close-btn transition-all duration-300 hover:scale-110 self-start"
             >
-              <img src={closeIcon} alt="Close" className="w-6 h-6" />
+              <img src={assets.close_icon} alt="Close" className="w-6 h-6" />
             </button>
           </div>
 
@@ -105,7 +122,7 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
             )}
 
             {/* First Name and Last Name */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label
                   className={`font-semibold text-sm pb-1 block ${themeClass(
@@ -151,88 +168,144 @@ const SignUp = ({ isOpen, onClose, onSwitchToLogin }) => {
             </div>
 
             {/* Email */}
-            <label
-              className={`font-semibold text-sm pb-1 block ${themeClass(
-                "text-gray-600",
-                "text-gray-400"
-              )}`}
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="john@example.com"
-              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
-                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
-                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
-              )}`}
-            />
+            <div className="mb-4">
+              <label
+                className={`font-semibold text-sm pb-1 block ${themeClass(
+                  "text-gray-600",
+                  "text-gray-400"
+                )}`}
+              >
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                  "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                  "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                )}`}
+              />
+            </div>
 
-            {/* Phone */}
-            <label
-              className={`font-semibold text-sm pb-1 block ${themeClass(
-                "text-gray-600",
-                "text-gray-400"
-              )}`}
-            >
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="+1 (555) 000-0000"
-              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
-                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
-                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
-              )}`}
-            />
+            {/* Mobile */}
+            <div className="mb-4">
+              <label
+                className={`font-semibold text-sm pb-1 block ${themeClass(
+                  "text-gray-600",
+                  "text-gray-400"
+                )}`}
+              >
+                Mobile Number
+              </label>
+              <input
+                type="tel"
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleChange}
+                placeholder="+1 (555) 000-0000"
+                className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                  "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                  "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                )}`}
+              />
+            </div>
+
+            {/* Date of Birth and Gender */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div>
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                  )}`}
+                />
+              </div>
+              <div>
+                <label
+                  className={`font-semibold text-sm pb-1 block ${themeClass(
+                    "text-gray-600",
+                    "text-gray-400"
+                  )}`}
+                >
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                  className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                    "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                    "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                  )}`}
+                >
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
 
             {/* Password */}
-            <label
-              className={`font-semibold text-sm pb-1 block ${themeClass(
-                "text-gray-600",
-                "text-gray-400"
-              )}`}
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="At least 6 characters"
-              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
-                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
-                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
-              )}`}
-            />
+            <div className="mb-4">
+              <label
+                className={`font-semibold text-sm pb-1 block ${themeClass(
+                  "text-gray-600",
+                  "text-gray-400"
+                )}`}
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="At least 6 characters"
+                className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                  "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                  "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                )}`}
+              />
+            </div>
 
             {/* Confirm Password */}
-            <label
-              className={`font-semibold text-sm pb-1 block ${themeClass(
-                "text-gray-600",
-                "text-gray-400"
-              )}`}
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Re-enter your password"
-              className={`border-2 rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
-                "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
-                "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
-              )}`}
-            />
+            <div className="mb-6">
+              <label
+                className={`font-semibold text-sm pb-1 block ${themeClass(
+                  "text-gray-600",
+                  "text-gray-400"
+                )}`}
+              >
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Re-enter your password"
+                className={`border-2 rounded-lg px-3 py-2 mt-1 text-sm w-full focus:outline-none focus:border-green-500 focus:ring-2 transition-all duration-300 ${themeClass(
+                  "border-gray-300 bg-white text-gray-900 focus:ring-green-200",
+                  "border-gray-600 bg-gray-700 text-gray-100 focus:ring-green-800"
+                )}`}
+              />
+            </div>
 
             {/* Sign Up Button */}
             <button

@@ -20,7 +20,7 @@ const translations = {
     myProfile: { Eng: "My Profile", Urdu: "میری پروفائل" },
     myAppointments: { Eng: "My Appointments", Urdu: "میری ملاقاتیں" },
     logout: { Eng: "Logout", Urdu: "لاگ آؤٹ" },
-    createAccount: { Eng: "Create account", Urdu: "اکاؤنٹ بنائیں" },
+    createAccount: { Eng: "Login", Urdu: "لاگ ان" },
   },
 
   // Footer

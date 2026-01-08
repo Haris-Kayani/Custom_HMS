@@ -1,80 +1,61 @@
-import { useState, useContext } from "react";
-import AppContext from "../context/AppContext";
+import { useState, useEffect, useContext } from "react";
 import { useLanguage } from "../context/LanguageContext";
-import { Calendar, Clock, MapPin, Stethoscope, X } from "lucide-react";
+import { Calendar, Clock, MapPin, Stethoscope } from "lucide-react";
+import API from "../services/api";
+import AppContext from "../context/AppContext";
 
 const MyAppointments = () => {
-  const { doctors } = useContext(AppContext);
+  const { auth } = useContext(AppContext);
   const { theme } = useLanguage();
+  const [appointments, setAppointments] = useState([]);
 
   const isDark = theme === "dark";
   const themeClass = (light, dark) => (isDark ? dark : light);
 
-  // Mock appointment data with doctor IDs
-  const [appointments, setAppointments] = useState([
-    {
-      id: 1,
-      doctorId: "doc1",
-      date: "January 15, 2026",
-      time: "10:00 AM",
-      appointmentType: "In-Person",
-      status: "Confirmed",
-    },
-    {
-      id: 2,
-      doctorId: "doc3",
-      date: "January 20, 2026",
-      time: "02:30 PM",
-      appointmentType: "Video Call",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      doctorId: "doc5",
-      date: "January 5, 2026",
-      time: "11:00 AM",
-      appointmentType: "In-Person",
-      status: "Completed",
-    },
-    {
-      id: 4,
-      doctorId: "doc2",
-      date: "January 25, 2026",
-      time: "03:00 PM",
-      appointmentType: "Phone Call",
-      status: "Confirmed",
-    },
-    {
-      id: 5,
-      doctorId: "doc7",
-      date: "January 12, 2026",
-      time: "09:30 AM",
-      appointmentType: "In-Person",
-      status: "Confirmed",
-    },
-  ]);
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      if (auth.token) {
+        try {
+          const { data } = await API.get("/appointments/my-appointments");
+          setAppointments(data.data);
+        } catch (error) {
+          console.error("Failed to fetch appointments", error);
+        }
+      }
+    };
+    fetchAppointments();
+  }, [auth.token]);
 
   const statusColors = {
-    Confirmed: themeClass(
+    confirmed: themeClass(
       "bg-green-100 text-green-800",
       "bg-green-900/30 text-green-400"
     ),
-    Pending: themeClass(
+    pending: themeClass(
       "bg-yellow-100 text-yellow-800",
       "bg-yellow-900/30 text-yellow-400"
     ),
-    Completed: themeClass(
+    completed: themeClass(
       "bg-blue-100 text-blue-800",
       "bg-blue-900/30 text-blue-400"
     ),
+    cancelled: themeClass(
+      "bg-red-100 text-red-800",
+      "bg-red-900/30 text-red-400"
+    ),
   };
 
-  const handleCancelAppointment = (appointmentId) => {
-    setAppointments(appointments.filter((apt) => apt.id !== appointmentId));
-  };
-
-  const getDoctorInfo = (doctorId) => {
-    return doctors.find((doc) => doc._id === doctorId);
+  const handleCancelAppointment = async (appointmentId) => {
+    try {
+      await API.put(`/appointments/${appointmentId}/cancel`);
+      setAppointments(
+        appointments.map((apt) =>
+          apt._id === appointmentId ? { ...apt, status: "cancelled" } : apt
+        )
+      );
+    } catch (error) {
+      console.error("Failed to cancel appointment", error);
+    }
   };
 
   return (
@@ -114,12 +95,12 @@ const MyAppointments = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {appointments.map((appointment) => {
-              const doctor = getDoctorInfo(appointment.doctorId);
+              const { doctor } = appointment;
               if (!doctor) return null;
 
               return (
                 <div
-                  key={appointment.id}
+                  key={appointment._id}
                   className={`rounded-lg shadow-lg border transition-all duration-300 hover:shadow-xl ${themeClass(
                     "bg-white border-gray-200",
                     "bg-gray-800 border-gray-700"
@@ -132,8 +113,8 @@ const MyAppointments = () => {
                         {/* Avatar */}
                         <div className="relative">
                           <img
-                            src={doctor.image}
-                            alt={doctor.name}
+                            src={doctor.image || "https://via.placeholder.com/150"}
+                            alt={`${doctor.firstName} ${doctor.lastName}`}
                             className="h-12 w-12 rounded-full object-cover"
                           />
                         </div>
@@ -145,7 +126,7 @@ const MyAppointments = () => {
                               "text-gray-100"
                             )}`}
                           >
-                            {doctor.name}
+                            Dr. {doctor.firstName} {doctor.lastName}
                           </h3>
                           <div
                             className={`flex items-center gap-1.5 text-sm mt-0.5 ${themeClass(
@@ -185,7 +166,7 @@ const MyAppointments = () => {
                           "text-gray-100"
                         )}`}
                       >
-                        {appointment.date}
+                        {new Date(appointment.appointmentDate).toLocaleDateString()}
                       </span>
                     </div>
 
@@ -200,7 +181,7 @@ const MyAppointments = () => {
                       <span
                         className={themeClass("text-gray-700", "text-gray-300")}
                       >
-                        {appointment.time}
+                        {appointment.appointmentTime}
                       </span>
                     </div>
 
@@ -218,7 +199,7 @@ const MyAppointments = () => {
                           "text-gray-300"
                         )}`}
                       >
-                        {doctor.address.line1}, {doctor.address.line2}
+                        {doctor.address?.line1 || "N/A"}
                       </span>
                     </div>
 
@@ -248,10 +229,10 @@ const MyAppointments = () => {
                     </div>
 
                     {/* Actions */}
-                    {appointment.status !== "Completed" && (
+                    {appointment.status !== "completed" && appointment.status !== "cancelled" && (
                       <div className="pt-2 flex gap-2">
                         <button
-                          onClick={() => handleCancelAppointment(appointment.id)}
+                          onClick={() => handleCancelAppointment(appointment._id)}
                           className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200 border ${themeClass(
                             "bg-red-50 text-red-600 border-red-200 hover:bg-red-100",
                             "bg-red-900/20 text-red-400 border-red-800 hover:bg-red-900/30"
